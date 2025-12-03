@@ -20,6 +20,7 @@ typedef void (*Events)(XEvent *event);
 /* Function Prototypes */
 void launch(XEvent *event, char *command);
 void destroy(XEvent *event, char *command);
+void closedpy(XEvent *, char *);
 void refresh(XEvent *event, char *command);
 void focus(XEvent *event, char *command);
 void configure(XEvent *event);
@@ -45,6 +46,7 @@ static Key keys[] = {
     { Mod4Mask, XK_b, launch, "firefox" },
     { Mod4Mask, XK_p, launch, "scr" },
     { Mod4Mask | ShiftMask, XK_e, destroy, 0 },
+    { Mod4Mask | ShiftMask, XK_q, closedpy, "display"},
     { Mod4Mask | ShiftMask, XK_r, refresh, 0 },
     { Mod4Mask, XK_Tab, focus, "next" },
     { Mod4Mask | ShiftMask, XK_Tab, focus, "prev" },
@@ -162,8 +164,8 @@ void map(XEvent *event)
     XConfigureWindow(display, window, CWBorderWidth, &changes);
     XMoveResizeWindow(display, window, 0, 0, width, height);
     XMapWindow(display, window);
-}
 
+}
 void focus(XEvent *event, char *command)
 {
     (void)event;
@@ -200,6 +202,12 @@ void destroy(XEvent *event, char *command)
     }
     if (w != None && w != root)
         XKillClient(display, w);
+}
+
+void closedpy(XEvent *, char *)
+{
+        XDestroyWindow(display, root);
+        XCloseDisplay(display);
 }
 
 void refresh(XEvent *event, char *command)
@@ -239,7 +247,9 @@ int main(void)
 
     screen = XDefaultScreen(display);
     root = XDefaultRootWindow(display);
+
     set_window_manager_name(display, root);
+
     XSelectInput(display, root, SubstructureRedirectMask);
     XDefineCursor(display, root, XCreateFontCursor(display, 68)); // left_ptr
 
