@@ -217,6 +217,17 @@ int ignore(Display *display, XErrorEvent *event)
     return 0;
 }
 
+void set_window_manager_name(Display *display, Window root) {
+    const char *wm_name = "chip-wm";
+
+    // Set window manager name for legacy and modern tools
+    XStoreName(display, root, wm_name);
+    Atom net_wm_name = XInternAtom(display, "_NET_WM_NAME", False);
+    Atom utf8_string = XInternAtom(display, "UTF8_STRING", False);
+    XChangeProperty(display, root, net_wm_name, utf8_string, 8, PropModeReplace,
+                    (unsigned char *)wm_name, strlen(wm_name));
+    XFlush(display);
+}
 
 int main(void)
 {
@@ -228,7 +239,7 @@ int main(void)
 
     screen = XDefaultScreen(display);
     root = XDefaultRootWindow(display);
-
+    set_window_manager_name(display, root);
     XSelectInput(display, root, SubstructureRedirectMask);
     XDefineCursor(display, root, XCreateFontCursor(display, 68)); // left_ptr
 
